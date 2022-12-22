@@ -18,6 +18,33 @@ struct pcd_dev {
 
 static struct pcd_dev *dev;
 
+loff_t pcd_llseek(struct file *filp, loff_t pos, int count)
+{
+	return pos;
+}
+
+ssize_t pcd_read(struct file *filp, char __user *ubuf, 
+		 size_t count, loff_t *pos)
+{
+	return count;
+}
+
+ssize_t pcd_write(struct file *filp, const char __user *ubuf, 
+		  size_t count, loff_t *pos)
+{
+	return count;
+}
+
+int pcd_open(struct inode *inode, struct file *filp)
+{
+	return 0;
+}
+
+int pcd_release(struct inode *inode, struct file *filp)
+{
+	return 0;
+}
+
 const struct file_operations pcd_fops = {
 	.owner = THIS_MODULE,
 	.open = pcd_open,
