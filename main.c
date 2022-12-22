@@ -70,9 +70,14 @@ static int __init pcd_init(void)
 	cdev_init(&dev->pcd_device, &pcd_fops);
 	dev->pcd_device.owner = THIS_MODULE;
 
-	pr_info("new device was allocated with major:minor %u:%u\n", 
+	ret = cdev_add(&dev->pcd_device, dev->dev_num, 1);
+	if (ret < 0)
+		goto out_cdev;
+
+	pr_info("new device was allocated with major:minor %u:%u\n",
 	        MAJOR(dev->dev_num), MINOR(dev->dev_num));
 
+out_cdev:
 out_acr:
 out_mem:
 	return ret;
@@ -80,6 +85,7 @@ out_mem:
 
 static void __exit pcd_exit(void)
 {
+	cdev_del(&dev->pcd_device);
 	unregister_chrdev_region(dev->dev_num, 1);
 	kfree(dev);
 }
