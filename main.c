@@ -23,14 +23,14 @@ loff_t pcd_llseek(struct file *filp, loff_t pos, int count)
 	return pos;
 }
 
-ssize_t pcd_read(struct file *filp, char __user *ubuf, 
-		 size_t count, loff_t *pos)
+ssize_t pcd_read(struct file *filp, char __user *ubuf,
+		size_t count, loff_t *pos)
 {
 	return count;
 }
 
-ssize_t pcd_write(struct file *filp, const char __user *ubuf, 
-		  size_t count, loff_t *pos)
+ssize_t pcd_write(struct file *filp, const char __user *ubuf,
+		size_t count, loff_t *pos)
 {
 	return count;
 }
@@ -75,7 +75,7 @@ static int __init pcd_init(void)
 		goto out_cdev;
 
 	pr_info("new device was allocated with major:minor %u:%u\n",
-	        MAJOR(dev->dev_num), MINOR(dev->dev_num));
+		MAJOR(dev->dev_num), MINOR(dev->dev_num));
 
 out_cdev:
 out_acr:
