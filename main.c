@@ -35,7 +35,7 @@ ssize_t pcd_read(struct file *filp, char __user *ubuf,
 	if (*pos + count > DEV_MEM_SIZE)
 		count = DEV_MEM_SIZE - *pos;
 
-	not_copied = copy_to_user(ubuf, dev->dev_buff, count);
+	not_copied = copy_to_user(ubuf, &dev->dev_buff[*pos], count);
 	count -= not_copied;
 
 	pr_info("read %zu bytes\n", count);
