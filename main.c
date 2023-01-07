@@ -5,6 +5,7 @@
 #include <linux/kdev_t.h>
 #include <linux/cdev.h>
 #include <linux/device.h>
+#include <linux/uaccess.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Kostiantyn Makhno");
@@ -48,6 +49,22 @@ ssize_t pcd_read(struct file *filp, char __user *ubuf,
 ssize_t pcd_write(struct file *filp, const char __user *ubuf,
 		size_t count, loff_t *pos)
 {
+	long not_copied;
+
+	pr_info("write requested bytes %zu\n", count);
+	if (*pos + count > DEV_MEM_SIZE)
+		count = DEV_MEM_SIZE - *pos;
+
+	if (!count)
+		return -ENOMEM;
+
+	not_copied = copy_from_user(&dev->dev_buff[*pos], ubuf, count);
+	count -= not_copied;
+
+	pr_info("written %zu bytes\n", count);
+
+	*pos += count;
+
 	return count;
 }
 
