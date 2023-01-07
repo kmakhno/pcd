@@ -4,6 +4,7 @@
 #include <linux/fs.h>
 #include <linux/kdev_t.h>
 #include <linux/cdev.h>
+#include <linux/device.h>
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Kostiantyn Makhno");
@@ -17,8 +18,10 @@ struct pcd_dev {
 };
 
 static struct pcd_dev *dev;
+static struct class *class_pcd;
+static struct device *device_pcd;
 
-loff_t pcd_llseek(struct file *filp, loff_t pos, int count)
+loff_t pcd_llseek(struct file *filp, loff_t pos, int whence)
 {
 	return pos;
 }
@@ -63,7 +66,7 @@ static int __init pcd_init(void)
 	if (!dev)
 		goto out_mem;
 
-	ret = alloc_chrdev_region(&dev->dev_num, 0, 1, "pcd");
+	ret = alloc_chrdev_region(&dev->dev_num, 0, 1, "pcd_devices");
 	if (ret < 0)
 		goto out_acr;
 
@@ -76,6 +79,9 @@ static int __init pcd_init(void)
 
 	pr_info("new device was allocated with major:minor %u:%u\n",
 		MAJOR(dev->dev_num), MINOR(dev->dev_num));
+
+	class_pcd = class_create(THIS_MODULE, "pcd_class");
+	device_pcd = device_create(class_pcd, NULL, dev->dev_num, NULL, "pcd");
 
 out_cdev:
 out_acr:
