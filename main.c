@@ -91,6 +91,8 @@ out_mem:
 
 static void __exit pcd_exit(void)
 {
+	device_destroy(class_pcd, dev->dev_num);
+	class_destroy(class_pcd);
 	cdev_del(&dev->pcd_device);
 	unregister_chrdev_region(dev->dev_num, 1);
 	kfree(dev);
