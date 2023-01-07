@@ -29,6 +29,19 @@ loff_t pcd_llseek(struct file *filp, loff_t pos, int whence)
 ssize_t pcd_read(struct file *filp, char __user *ubuf,
 		size_t count, loff_t *pos)
 {
+	long not_copied;
+
+	pr_info("read requested bytes %zu\n", count);
+	if (*pos + count > DEV_MEM_SIZE)
+		count = DEV_MEM_SIZE - *pos;
+
+	not_copied = copy_to_user(ubuf, dev->dev_buff, count);
+	count -= not_copied;
+
+	pr_info("read %zu bytes\n", count);
+
+	*pos += count;
+
 	return count;
 }
 
