@@ -121,28 +121,45 @@ static int __init pcd_init(void)
 	ret = -ENOMEM;
 	dev = kmalloc(sizeof(*dev), GFP_KERNEL);
 	if (!dev)
-		goto out_mem;
+		goto err_alloc_mem;
 
 	ret = alloc_chrdev_region(&dev->dev_num, 0, 1, "pcd_devices");
 	if (ret < 0)
-		goto out_acr;
+		goto err_alloc_dev_num;
 
 	cdev_init(&dev->pcd_device, &pcd_fops);
 	dev->pcd_device.owner = THIS_MODULE;
 
 	ret = cdev_add(&dev->pcd_device, dev->dev_num, 1);
 	if (ret < 0)
-		goto out_cdev;
+		goto err_cdev_reg;
 
 	pr_info("new device was allocated with major:minor %u:%u\n",
 		MAJOR(dev->dev_num), MINOR(dev->dev_num));
 
 	class_pcd = class_create(THIS_MODULE, "pcd_class");
-	device_pcd = device_create(class_pcd, NULL, dev->dev_num, NULL, "pcd");
+	if (IS_ERR(class_pcd)) {
+		ret = PTR_ERR(class_pcd);
+		goto err_class_create;
+	}
 
-out_cdev:
-out_acr:
-out_mem:
+	device_pcd = device_create(class_pcd, NULL, dev->dev_num, NULL, "pcd");
+	if (IS_ERR(device_pcd)) {
+		ret = PTR_ERR(device_pcd);
+		goto err_dev_create;
+	}
+
+	return 0;
+
+err_dev_create:
+	class_destroy(class_pcd);
+err_class_create:
+	cdev_del(&dev->pcd_device);
+err_cdev_reg:
+	unregister_chrdev_region(dev->dev_num, 1);
+err_alloc_dev_num:
+	kfree(dev);
+err_alloc_mem:
 	return ret;
 }
 
