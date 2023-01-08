@@ -24,17 +24,26 @@ static struct device *device_pcd;
 
 loff_t pcd_llseek(struct file *filp, loff_t pos, int whence)
 {
+	loff_t temp;
+
 	switch (whence) {
 
 	case SEEK_SET:
+		if (pos > DEV_MEM_SIZE || pos < 0)
+			return -EINVAL;
 		filp->f_pos = pos;
 		break;
 
 	case SEEK_CUR:
-		filp->f_pos += pos;
+		temp = filp->f_pos + pos;
+		if (temp > DEV_MEM_SIZE || temp < 0)
+			return -EINVAL;
+		filp->f_pos = temp;
 		break;
 
 	case SEEK_END:
+		if (pos > 0)
+			return -EINVAL;
 		filp->f_pos = DEV_MEM_SIZE + pos;
 		break;
 
