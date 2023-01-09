@@ -11,11 +11,29 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Kostiantyn Makhno");
 MODULE_DESCRIPTION("Simple pseudo character driver");
 
-#define DEV_MEM_SIZE 512
+#define NO_DEVICES    4
+#define DEV1_MEM_SIZE 1024
+#define DEV2_MEM_SIZE 512
+#define DEV3_MEM_SIZE 256
+#define DEV4_MEM_SIZE 512
+
+char dev1_buffer[DEV1_MEM_SIZE];
+char dev2_buffer[DEV2_MEM_SIZE];
+char dev3_buffer[DEV3_MEM_SIZE];
+char dev4_buffer[DEV4_MEM_SIZE];
+
 struct pcd_dev {
 	struct cdev pcd_device;
 	dev_t dev_num;
-	char dev_buff[DEV_MEM_SIZE];
+	char *buff;
+	int perm;
+	size_t size;
+	const char *serial_number;
+};
+
+struct pcdrv_private_data {
+	int total_devices;
+	struct pcd_dev pcd_dev_data[NO_DEVICES];
 };
 
 static struct pcd_dev *dev;
