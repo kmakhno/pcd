@@ -69,7 +69,7 @@ static struct pcdrv_private_data drv_data = {
 		[3] = {
 			.buff = dev4_buffer,
 			.size = DEV4_MEM_SIZE,
-			.serial_number = "pcd4"
+			.serial_number = "pcd4",
 			.perm = RDWR
 		}
 	}
@@ -176,38 +176,40 @@ static int __init pcd_init(void)
 	if (ret < 0)
 		goto err_alloc_dev_num;
 
-	for (i = 0; i < NO_DEVICES; ++i) {
-		pr_info("new device number was allocated: major:minor %u:%u\n",
-			MAJOR(drv_data.dev_num + i), MINOR(drv_data.dev_num + i));
-	}
-
-	cdev_init(&dev->pcd_device, &pcd_fops);
-	dev->pcd_device.owner = THIS_MODULE;
-
-	ret = cdev_add(&dev->pcd_device, dev->dev_num, 1);
-	if (ret < 0)
-		goto err_cdev_reg;
-
-	class_pcd = class_create(THIS_MODULE, "pcd_class");
-	if (IS_ERR(class_pcd)) {
-		ret = PTR_ERR(class_pcd);
+	drv_data.class_pcd = class_create(THIS_MODULE, "pcd_class");
+	if (IS_ERR(drv_data.class_pcd)) {
+		ret = PTR_ERR(drv_data.class_pcd);
 		goto err_class_create;
 	}
 
-	device_pcd = device_create(class_pcd, NULL, dev->dev_num, NULL, "pcd");
-	if (IS_ERR(device_pcd)) {
-		ret = PTR_ERR(device_pcd);
-		goto err_dev_create;
+	for (i = 0; i < NO_DEVICES; ++i) {
+		pr_info("new device number was allocated: major:minor %u:%u\n",
+			MAJOR(drv_data.dev_num + i), MINOR(drv_data.dev_num + i));
+
+		cdev_init(&drv_data.pcd_dev_data[i].pcd_device, &pcd_fops);
+		drv_data.pcd_dev_data[i].pcd_device.owner = THIS_MODULE;
+
+		ret = cdev_add(&drv_data.pcd_dev_data[i].pcd_device, drv_data.dev_num + i, 1);
+		if (ret < 0)
+			goto err_cdev_reg;
+
+		drv_data.device_pcd = device_create(drv_data.class_pcd, NULL, drv_data.dev_num + i, NULL, "pcd-%d", i);
+		if (IS_ERR(drv_data.device_pcd)) {
+			ret = PTR_ERR(drv_data.device_pcd);
+			goto err_dev_create;
+		}
 	}
 
 	return 0;
 
 err_dev_create:
-	class_destroy(class_pcd);
-err_class_create:
-	cdev_del(&dev->pcd_device);
+	class_destroy(drv_data.class_pcd);
 err_cdev_reg:
-	unregister_chrdev_region(dev->dev_num, 1);
+	for (i -= 1; i > 0; --i) {
+		cdev_del(&drv_data.pcd_dev_data[i].pcd_device);
+	}
+err_class_create:
+	unregister_chrdev_region(drv_data.dev_num, NO_DEVICES);
 err_alloc_dev_num:
 	return ret;
 }
