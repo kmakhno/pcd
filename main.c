@@ -170,10 +170,16 @@ const struct file_operations pcd_fops = {
 static int __init pcd_init(void)
 {
 	int ret;
+	int i;
 
 	ret = alloc_chrdev_region(&drv_data.dev_num, 0, NO_DEVICES, "pcd_devices");
 	if (ret < 0)
 		goto err_alloc_dev_num;
+
+	for (i = 0; i < NO_DEVICES; ++i) {
+		pr_info("new device number was allocated: major:minor %u:%u\n",
+			MAJOR(drv_data.dev_num + i), MINOR(drv_data.dev_num + i));
+	}
 
 	cdev_init(&dev->pcd_device, &pcd_fops);
 	dev->pcd_device.owner = THIS_MODULE;
@@ -181,9 +187,6 @@ static int __init pcd_init(void)
 	ret = cdev_add(&dev->pcd_device, dev->dev_num, 1);
 	if (ret < 0)
 		goto err_cdev_reg;
-
-	pr_info("new device was allocated with major:minor %u:%u\n",
-		MAJOR(dev->dev_num), MINOR(dev->dev_num));
 
 	class_pcd = class_create(THIS_MODULE, "pcd_class");
 	if (IS_ERR(class_pcd)) {
