@@ -24,7 +24,6 @@ char dev4_buffer[DEV4_MEM_SIZE];
 
 struct pcd_dev {
 	struct cdev pcd_device;
-	dev_t dev_num;
 	char *buff;
 	int perm;
 	size_t size;
@@ -33,12 +32,13 @@ struct pcd_dev {
 
 struct pcdrv_private_data {
 	int total_devices;
+	dev_t dev_num;
+	struct class *class_pcd;
+	struct device *device_pcd;
 	struct pcd_dev pcd_dev_data[NO_DEVICES];
 };
 
-static struct pcd_dev *dev;
-static struct class *class_pcd;
-static struct device *device_pcd;
+static struct pcdrv_private_data drv_data;
 
 loff_t pcd_llseek(struct file *filp, loff_t pos, int whence)
 {
