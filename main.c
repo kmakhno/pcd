@@ -17,6 +17,10 @@ MODULE_DESCRIPTION("Simple pseudo character driver");
 #define DEV3_MEM_SIZE 256
 #define DEV4_MEM_SIZE 512
 
+#define RDONLY 0x10
+#define WRONLY 0x20
+#define RDWR   0x30
+
 char dev1_buffer[DEV1_MEM_SIZE];
 char dev2_buffer[DEV2_MEM_SIZE];
 char dev3_buffer[DEV3_MEM_SIZE];
@@ -38,7 +42,38 @@ struct pcdrv_private_data {
 	struct pcd_dev pcd_dev_data[NO_DEVICES];
 };
 
-static struct pcdrv_private_data drv_data;
+static struct pcdrv_private_data drv_data = {
+	.total_devices = NO_DEVICES,
+	.pcd_dev_data = {
+		[0] = {
+			.buff = dev1_buffer,
+			.size = DEV1_MEM_SIZE,
+			.serial_number = "pcd1",
+			.perm = RDONLY
+		},
+
+		[1] = {
+			.buff = dev2_buffer,
+			.size = DEV2_MEM_SIZE,
+			.serial_number = "pcd2",
+			.perm = WRONLY
+		},
+
+		[2] = {
+			.buff = dev3_buffer,
+			.size = DEV3_MEM_SIZE,
+			.serial_number = "pcd3",
+			.perm = RDWR
+		},
+
+		[3] = {
+			.buff = dev4_buffer,
+			.size = DEV4_MEM_SIZE,
+			.serial_number = "pcd4"
+			.perm = RDWR
+		}
+	}
+};
 
 loff_t pcd_llseek(struct file *filp, loff_t pos, int whence)
 {
