@@ -203,11 +203,12 @@ static int __init pcd_init(void)
 	return 0;
 
 err_dev_create:
-	class_destroy(drv_data.class_pcd);
 err_cdev_reg:
 	for (i -= 1; i > 0; --i) {
+		device_destroy(drv_data.class_pcd, drv_data.dev_num + i);
 		cdev_del(&drv_data.pcd_dev_data[i].pcd_device);
 	}
+	class_destroy(drv_data.class_pcd);
 err_class_create:
 	unregister_chrdev_region(drv_data.dev_num, NO_DEVICES);
 err_alloc_dev_num:
