@@ -217,11 +217,14 @@ err_alloc_dev_num:
 
 static void __exit pcd_exit(void)
 {
-	device_destroy(class_pcd, dev->dev_num);
-	class_destroy(class_pcd);
-	cdev_del(&dev->pcd_device);
-	unregister_chrdev_region(dev->dev_num, 1);
-	kfree(dev);
+	int i;
+
+	for (i = 0; i < NO_DEVICES; ++i) {
+		device_destroy(drv_data.class_pcd, drv_data.dev_num + i);
+		cdev_del(&drv_data.pcd_dev_data[i].pcd_device);
+	}
+	class_destroy(drv_data.class_pcd);
+	unregister_chrdev_region(drv_data.dev_num, NO_DEVICES);
 }
 
 
