@@ -171,12 +171,7 @@ static int __init pcd_init(void)
 {
 	int ret;
 
-	ret = -ENOMEM;
-	dev = kmalloc(sizeof(*dev), GFP_KERNEL);
-	if (!dev)
-		goto err_alloc_mem;
-
-	ret = alloc_chrdev_region(&dev->dev_num, 0, 1, "pcd_devices");
+	ret = alloc_chrdev_region(&drv_data.dev_num, 0, NO_DEVICES, "pcd_devices");
 	if (ret < 0)
 		goto err_alloc_dev_num;
 
@@ -211,8 +206,6 @@ err_class_create:
 err_cdev_reg:
 	unregister_chrdev_region(dev->dev_num, 1);
 err_alloc_dev_num:
-	kfree(dev);
-err_alloc_mem:
 	return ret;
 }
 
